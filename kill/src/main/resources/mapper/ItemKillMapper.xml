@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dingding.kill.mapper.ItemKillMapper">
+
+
+    <!--
+        查询待秒杀的活动商品列表
+        当待秒杀的商品的剩余数量/库存，即 total 字段的取值大于0时，
+        并且 “当前的服务器时间now()处于待秒杀商品的抢购开始时间 和 抢购结束时间的范围内”时，
+        canKill的取值将为1，即代表可以被抢购或者被秒杀。否则canKill的取值将为0。
+    -->
+    <select id="selectAll" resultType="com.dingding.kill.entity.ItemKill">
+        select ik.*, i.name as itemName,
+        (
+          case when (now() between ik.start_time and ik.end_time and ik.total > 0)
+             then 1
+             else 0
+             end
+        ) as canKill
+        from item_kill as ik inner join  item as i on ik.item_id = i.id
+        where ik.is_active = 1
+    </select>
+
+    <select id="selectById" resultType="com.dingding.kill.entity.ItemKill">
+        select ik.*, i.name as itemName,
+          (
+           case when (now() between ik.start_time and ik.end_time and ik.total > 0)
+                     then 1
+                else 0
+               end
+           ) as canKill
+        from item_kill as ik inner join  item as i on ik.item_id = i.id
+        where ik.is_active = 1 and ik.id = #{id} and ik.total > 0
+    </select>
+
+    <update id="updateKillItem">
+        update item_kill set total = total - 1
+        where id = #{killId}
+        and total > 0
+    </update>
+
+</mapper>

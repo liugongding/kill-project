@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dingding.kill.mapper.ItemKillSuccessMapper">
+
+
+    <select id="countByKillUserId" resultType="java.lang.Integer">
+      select count(1) as total
+      from item_kill_success
+      where kill_id = #{killId}
+       and user_id = #{userId} and status in (0)
+    </select>
+
+    <insert id="insertSelective">
+    insert into item_kill_success
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+        <if test="code != null" >code,</if>
+        <if test="itemId != null" >item_id,</if>
+        <if test="killId != null"> kill_id,</if>
+        <if test="userId != null" >user_id,</if>
+        <if test="status != null" >status,</if>
+        <if test="createTime != null" >create_time,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+        <if test="code != null" >#{code,jdbcType=VARCHAR},</if>
+        <if test="itemId != null" >#{itemId,jdbcType=INTEGER},</if>
+        <if test="killId != null" >#{killId,jdbcType=INTEGER}, </if>
+        <if test="userId != null" >#{userId,jdbcType=VARCHAR},</if>
+        <if test="status != null" >#{status,jdbcType=TINYINT},</if>
+        <if test="createTime != null" >#{createTime,jdbcType=TIMESTAMP},</if>
+    </trim>
+    </insert>
+
+    <select id="selectByCode" resultType="com.dingding.kill.dto.KillSuccessUserInfo">
+      select
+      iks.*, u.user_name, u.phone, u.email, i.name as itemName
+      from item_kill_success as iks
+      left join user u on u.id = iks.user_id
+      left join item i on i.id = iks.item_id
+      where iks.code = #{code} and u.is_active
+    </select>
+
+    <select id="selectByPrimaryKey" resultType="com.dingding.kill.entity.ItemKillSuccess">
+        select *
+        from item_kill_success
+        where code = #{code};
+    </select>
+
+    <update id="expireOrder">
+        update item_kill_success
+        set status = -1
+        where code = #{code}
+        and status = 0
+    </update>
+</mapper>

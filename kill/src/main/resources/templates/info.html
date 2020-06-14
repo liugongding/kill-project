@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>秒杀商品列表页</title>
+    <link rel="stylesheet" th:href="@{/lib/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/lib/font/css/font-awesome.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/seckill.css}"/>
+    <link rel="stylesheet" th:href="@{/css/public.css}"/>
+</head>
+<style>
+    .btn-info{
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<body>
+
+    <div class="container">
+        <div class="panel panel-default">
+            <div id="killId" th:text="${detail.id}" style="display: none;"></div>
+            <div class="panel-heading">
+                <h1>商品名称：<span th:text="${detail.itemName}"></span></h1>
+            </div>
+            <div class="panel-body">
+                <h2 class="text-danger">剩余数量：<span th:text="${detail.total}"></span></h2>
+            </div>
+            <div class="panel-body">
+                <h2 class="text-danger">开始时间：[[${#dates.format(detail.startTime, 'yyyy-MM-dd HH:mm:ss')}]]</h2>
+            </div>
+            <div class="panel-body">
+                <h2 class="text-danger">开始时间：[[${#dates.format(detail.endTime, 'yyyy-MM-dd HH:mm:ss')}]]</h2>
+            </div>
+        </div>
+        <td>
+            <div class="panel panel-default" th:switch="${detail.canKill == 1}">
+                <a id="kill" th:case="true" class="btn btn-info" style="font-size: 20px">抢购</a>
+                <a id="killmq" th:case="true" class="btn btn-info" style="font-size: 20px">抢购-MQ异步</a>
+                <a th:case="false" class="btn btn-info" style="font-size: 20px">哈哈~商品已抢购完毕或者不在抢购时间段哦!</a>
+            </div>
+        </td>
+    </div>
+    <script type="text/javascript" th:src="@{/lib/jquery-3.3.1.min.js}"></script>
+    <script type="text/javascript" th:src="@{/lib/bootstrap.min.js}"></script>
+    <script type="text/javascript">
+        $("#kill").click(function () {
+            $.ajax({
+                type: "POST",
+                url: "http://localhost:8092/kill/execute",
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify(getJsonData()),
+                success: function (res) {
+                    if (res.code == 200) {
+                        window.location.href = "http://localhost:8092/kill/execute/success"
+                    } else if(res.code == 400){
+                        alert(res.msg)
+                    }
+                },
+                error: function (message) {
+                    alert("提交数据失败")
+                    return
+                }
+            })
+        })
+
+        function getJsonData() {
+            var killId = document.getElementById("killId").innerHTML
+            var data = {
+                "killId":killId
+            }
+            return data
+        }
+        function load() {
+            window.location.reload();
+        }
+
+        function executeKillMq() {
+            $.ajax({
+                type: "POST",
+                url: "/kill/execute/mq",
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify(getJsonData()),
+                dataType: "json",
+                success: function (res) {
+                    if (res.code == 0){
+                        window.location.href = "/kill/execute/mq/to/result?killId="+$("#killId").val()
+                    } else {
+                        window.location.href = "kill/execute/fail"
+                    }
+                },
+                error: function (message) {
+                    alert("提交数据失败！")
+                    return
+                }
+            })
+        }
+    </script>
+</body>
+
+</html>

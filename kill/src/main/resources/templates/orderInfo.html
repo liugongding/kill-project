@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>商城高并发抢购-抢购成功商品详情页面</title>
+    <link rel="stylesheet" th:href="@{/lib/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/lib/font/css/font-awesome.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/seckill.css}"/>
+    <link rel="stylesheet" th:href="@{/css/public.css}"/>
+</head>
+<style>
+
+</style>
+<body>
+
+<div class="container">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <h2>当前用户名：</h2><h2 class="text-danger" th:text="${detail.userName}"></h2>
+        </div>
+        <div class="panel-body">
+            <h2>抢购的商品名称：</h2><h2 class="text-danger" th:text="${detail.itemName}"></h2>
+        </div>
+        <div class="panel-body">
+            <h2>订单编号：</h2><h2 id="code" class="text-danger" th:text="${detail.code}"></h2>
+        </div>
+        <div class="panel-body">
+            <h2>成功抢购的时间：</h2>
+            <h2 class="text-danger">[[${#dates.format(detail.createTime, 'yyyy-MM-dd HH:mm:ss')}]]</h2>
+        </div>
+        <div class="panel-body">
+            <h2>当前支付的状态：</h2>
+            <h2 class="text-danger">
+                <div class="detail" th:switch="${detail.status == 1}">
+                    <button th:case="true">已成功付款</button>
+                    <button th:case="false">未支付、订单已失效</button>
+                </div>
+            </h2>
+        </div>
+    </div>
+    <table>
+        <tr>
+            <td>
+                <strong>
+                    <button id="pay" style="font-size: 30px;width: 1100px;height: auto;background-color: #28a4c9;">点击按钮进行支付</button>
+                </strong>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script type="text/javascript" th:src="@{/lib/jquery-3.3.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/lib/bootstrap.min.js}"></script>
+<script type="text/javascript">
+    $("#pay").click(function () {
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8092/kill/pay",
+            contentType: "application/json;charset=utf-8",
+            data: {
+                "code": document.getElementById("code").innerHTML
+            },
+            success:function (res) {
+                if (res.code === 200) {
+                    alert("支付成功")
+                } else {
+                    alert("支付失败")
+                }
+            }
+        })
+    })
+</script>
+</body>
+</html>

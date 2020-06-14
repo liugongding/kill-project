@@ -1,0 +1,190 @@
+
+server:
+  port: 8092
+  servlet:
+    context-path: /kill
+
+#开发环境配置
+spring:
+  application:
+    name: springboot-dubbo-commodity
+  datasource:
+    name: springboot-dubbo-commodity
+    type: com.alibaba.druid.pool.DruidDataSource
+    #druid相关配置
+    druid:
+      #mysql驱动
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      #基本属性
+      url: jdbc:mysql://127.0.0.1:3306/db_second_kill?useUnicode=true&useAffectedRows=true&characterEncoding=UTF-8&serverTimezone=UTC&autoReconnect=true&failOverReadOnly=false
+      username: root
+      password: 123456
+      #配置初始化大小/最小/最大
+      initial-size: 10
+      min-idle: 10
+      max-active: 20
+      #获取连接等待超时时间
+      max-wait: 60000
+      #间隔多久进行一次检测，检测需要关闭的空闲连接
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-return: false
+      test-on-borrow: false
+      #打开PSCache，并且指定每个连接上PSCache的大小
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      web-stat-filter:
+        session-stat-enable: true
+        #????
+        principal-session-name: admin
+        url-pattern: /*
+        session-stat-max-count: 100000
+        exclusions: '*.js,/*.gif,/*.jpg,/*.png,/*.css,/*.ico,/druid/*'
+        enabled: true
+        #????
+        principal-cookie-name: admin
+        profile-enable: true
+      filters: stat,wall
+      filter:
+        stat:
+          db-type: mysql
+          log-slow-sql: true
+          slow-sql-millis: 2000
+        wall:
+          log-violation: true
+          db-type: mysql
+          config:
+            delete-allow: true
+            truncate-allow: false
+            drop-table-allow: false
+          enabled: true
+      stat-view-servlet:
+        url-pattern: /druid/*
+        reset-enable: true
+        login-username: root
+        login-password: 123456
+        enabled: true
+
+  redis:
+    #redis数据库索引
+    database: 0
+    #redis服务器地址、这里是本地
+    host: 127.0.0.1
+    #redis连接密码、默认为空
+    password:
+    #redis端口号
+    port: 6379
+    #连接超时时间
+    timeout: 5000
+    jedis:
+      pool:
+        #连接池最大连接数（使用负数没有限制）
+        max-active: 8
+        #连接池最大阻塞等待时间
+        max-wait: 60
+        #连接池中最大空闲连接
+        max-idle: 8
+        #连接池中最小空闲连接
+        min-idle: 0
+  cache:
+    type: redis
+    redis:
+      time-to-live: 2000 #缓存超时时间ms
+      cache-null-values: false #是否缓存空值
+
+  #rabbitmq
+  rabbitmq:
+    port: 5672
+    username: guest
+    password: guest
+    #消息发送至 exchange 才 callback
+    #必须配置这个才会确认回调
+    publisher-confirm-type: correlated
+    #消息发送至 queue 失败才 callback
+    publisher-returns: true
+    #消费消息手动删除
+    listener:
+      direct:
+        acknowledge-mode: manual
+      simple:
+        #同一个队列启动几个消费者
+        concurrency: 5
+        #启动消费者最大数量
+        max-concurrency: 15
+        #限制每次发送几条条数据
+        prefetch: 10
+        acknowledge-mode: manual
+    template:
+      mandatory: true
+      #重新投递时间（分钟）
+      receive-timeout: 1
+    virtual-host: /
+
+## 邮件配置
+  mail:
+    port: 465
+    host: smtp.qq.com
+    #发件人
+    username: 1051533375@qq.com
+    password: iweqhnoxvsfxbddi
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
+          starttls:
+            enable: true
+            required: true
+
+## thymaleaf
+  mvc:
+    static-path-pattern: /**
+  resources:
+    static-locations: classpath:/static/
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    check-template-location: true
+    encoding: UTF-8
+    mode: LEGACYHTML5
+    cache: false
+
+
+
+
+#mybatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.dingding.kill.entity
+  configuration:
+    # 使用jdbc的getGeneratedKeys 可以获取数据库自增主键值
+    use-generated-keys: true
+    # 使用列别名替换列名，默认true。如：select name as title from table
+    use-column-label: true
+    # 开启驼峰命名转换，如：Table(create_time) -> Entity(createTime)。不需要我们关心怎么进行字段匹配，mybatis会自动识别`大写字母与下划线`
+    map-underscore-to-camel-case: true
+
+# 日志配置
+logging:
+  level:
+    com.dingding.kill.mapper: debug
+
+
+
+
+##jwt配置
+audience:
+  # 代表这个JWT的接收对象,存入audience
+  clientId: 098f6bcd4621d373cade4e832627b4f6
+  # 密钥, 经过Base64加密, 可自行替换
+  base64Secret: MDk4ZjZiY2Q0NjIxZDM3M2NhZGU0ZTgzMjYyN2I0ZjY=
+  # JWT的签发主体，存入issuer
+  name: restapiuser
+  # 过期时间，时间戳
+  expiresSecond: 172800
